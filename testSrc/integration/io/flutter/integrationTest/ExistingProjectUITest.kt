@@ -98,6 +98,7 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
       try {
         inFrame {
           timed("project frame appears (attempt ${attempt + 1})") { waitFound(frameTimeout) }
+          bringIdeToFront(force = true)
           timed("background tasks finish: indexing etc. (attempt ${attempt + 1})") { driver.waitForIndicators(5.minutes) }
         }
         println("Project is open and indexed.")
@@ -131,6 +132,7 @@ abstract class ExistingProjectUITest(private val packageName: String) : FlutterI
     startIde(Setup.setupTestContextIU262(javaClass.simpleName, NoProject)) { it.runIdeWithDriver() }
     result.currentPhase = Phase.SETUP
     timed("welcome screen appears") { driver.ui.welcomeScreen { waitFound(2.minutes) } }
+    bringIdeToFront(force = true)
     println("Welcome screen is showing")
   }
 

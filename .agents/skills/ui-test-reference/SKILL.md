@@ -142,7 +142,10 @@ All of them extend `FlutterIdeUITest`, which gives every test:
   minus a short justified allowlist) and the **leaked-process check**
   (`flutter`/`dart` descendants still alive are killed and reported). Both fail
   the test, except when `AGENT_TESTING_MODE=red`, when they only record.
-- `waitUntil(message) { }`, `dismissInterruptions()`, `closeTrialTab()`.
+- `waitUntil(message) { }`, `dismissInterruptions()` (closes IDE pop-ups and
+  re-raises the IDE if it lost its place), `closeTrialTab()`, and
+  `bringIdeToFront(force)`: Driver clicks with the real mouse, so the IDE must
+  be the top window; on Windows it opens behind the active one.
 
 `ExistingProjectUITest` adds the project lifecycle (`createProject` in
 `@BeforeAll`, `prepareProject()` hook for overlays, `deleteProject`),
@@ -263,5 +266,6 @@ calling a failure a product finding, and append to it when you find one.
 | A red run looked valid but nobody could say which plugin bytes the IDE had loaded | the broken and real builds were both `SNAPSHOT` | `build-broken-plugin.sh` stamps `-broken-<stamp>` into the version; the harness records `pluginVersion`/`pluginZipSha256`; the parser rejects an unstamped red or a stamped green |
 | `#8845` did not reproduce on IU 262 but did on IU 252, the build in the issue | the platform changed how `File > Open` picks an open processor | pin `ide.version` from the issue in the spec's Fixture; the harness then picks a Dart plugin that 25x can load (506.x, which needs LSP4IJ, which `Setup` installs) |
 | A passing self-check took 9 minutes on Windows; `close IDE and wait` alone took ~3 | three Starter process scans (OSHI reads every process's command line), one of them from a `MavenBuildTool` that `withBuildTool<GradleBuildTool>()` had instantiated | read the `[timing]` summary first; Starter's scans are disabled and replaced by `killLeftoverTestIdes`; never call `withBuildTool` in `Setup` |
+| On Windows a click "succeeded" but nothing happened; `idea.log`: `SmoothRobot - Click was unsuccessful`; the screenshot shows another app | the IDE opened behind the active window (Windows foreground lock), so the real-mouse click hit that window; Java still reported the IDE frame as focused | `bringIdeToFront(force = true)` after the first window appears (the base classes do it); call it again before clicking in a window the test itself brought up from outside the IDE |
 | Every run failed the plugin-loaded gate: `Dart 506.1.0 requires IDE build 261.* or older` on IU 262 | `DART_PLUGIN_VERSION=506.1.0`, set for a 252 run, was still set in the shell | `DartPluginSelection` checks the Dart plugin's build range before the IDE starts and names the override; don't export `DART_PLUGIN_VERSION`, pin the IDE with `-Pide.version` instead |
 | On IU 252 the project opened but nothing rendered for 2+ minutes: Project tree "loading…", no toolbar actions, Driver screenshots timing out | 2025.2 defaults to out-of-process JCEF; under Xvfb the `cef_server` handshake for the auto-opened `README.md` Markdown preview blocked the EDT (thread dumps: `MarkdownJCEFHtmlPanel` → `CefServer`) | `Setup.kt` sets `jcef.remote.enabled=false` on Linux; a frozen EDT looks like a plugin failure, so check `monitoring-thread-dumps-ide/` before blaming the plugin |

@@ -7,6 +7,7 @@
 package io.flutter.integrationTest
 
 import com.intellij.driver.client.Driver
+import com.intellij.driver.client.Remote
 import com.intellij.driver.sdk.ActionManager
 import com.intellij.driver.sdk.getPlugin
 import com.intellij.driver.sdk.invokeAction
@@ -347,10 +348,62 @@ abstract class FlutterIdeUITest {
   }
 
   /**
+   * Brings the IDE's windows in front of every other window on the desktop, unless one of them already has focus.
+   *
+   * Driver clicks with the real mouse (`java.awt.Robot`), so a click lands on whatever window is on top at that spot.
+   * On Windows the IDE often opens *behind* the window you were using: Windows won't let a process that wasn't started
+   * by a user action take the foreground ("foreground lock"), so it only flashes the taskbar button. Clicks then hit
+   * the other window (`idea.log`: "SmoothRobot - Click was unsuccessful") and screenshots show the wrong thing. A
+   * window can still raise itself by being always-on-top for a moment, so this does that for each showing IDE window
+   * on the IDE's UI thread, then restores the previous always-on-top state. Harmless on Linux and macOS.
+   *
+   * Called with [force] after the IDE's first window appears, and without it from [dismissInterruptions], so a window
+   * that loses its place while a test is polling is raised again. Never fails the test; a failure is only logged.
+   *
+   * @param force raise even if an IDE window reports focus. Needed right after launch: under the foreground lock
+   *   Windows has been seen to report the IDE frame as focused while it sat behind a maximized terminal. Without
+   *   [force] the raise is skipped when a window is focused, so polling doesn't steal focus from a popup the test has
+   *   just opened (a focus change closes IDE popups).
+   */
+  protected fun bringIdeToFront(force: Boolean = false) {
+    runCatching {
+      driver.withContext(OnDispatcher.EDT) {
+        val windows = driver.utility(AwtWindow::class).getWindows().filter { it.isShowing() }
+        if (windows.isEmpty() || (!force && windows.any { it.isFocused() })) return@withContext
+        windows.forEach { window ->
+          val wasOnTop = window.isAlwaysOnTop()
+          window.setAlwaysOnTop(true)
+          window.toFront()
+          window.requestFocus()
+          if (!wasOnTop) window.setAlwaysOnTop(false)
+        }
+        println("Brought the IDE to the front (${windows.size} window(s))")
+      }
+    }.onFailure { println("Could not bring the IDE to the front: ${it.message}") }
+  }
+
+  /**
+   * The parts of `java.awt.Window` that [bringIdeToFront] needs, called inside the IDE through Driver. Driver's own
+   * `Window` interface has no always-on-top methods. `getWindows` is static and is called through `driver.utility`.
+   */
+  @Remote("java.awt.Window")
+  interface AwtWindow {
+    fun getWindows(): List<AwtWindow>
+    fun isShowing(): Boolean
+    fun isFocused(): Boolean
+    fun isAlwaysOnTop(): Boolean
+    fun setAlwaysOnTop(alwaysOnTop: Boolean)
+    fun toFront()
+    fun requestFocus()
+  }
+
+  /**
    * Closes dialogs the IDE may pop up on its own during a test (for example the trial feedback survey "Tell us about
-   * your experience"), which would otherwise block the UI. Called while polling.
+   * your experience"), which would otherwise block the UI, and brings the IDE back to the front if another window
+   * covered it. Called while polling.
    */
   protected fun dismissInterruptions() {
+    bringIdeToFront()
     runCatching {
       driver.ui.xx("//div[@class='JButton' and (@visible_text='No, Thanks' or @visible_text='No, thanks')]").list()
         .firstOrNull()?.let {

@@ -11,6 +11,13 @@ Format: **title** · date · where it bit · what it is · what we did · status
 
 ---
 
+## On Windows the IDE under test opens behind the active window, and every click misses
+
+- **Date:** 2026-11-27 · **Where:** T4 (`OpenProjectWithoutIdeaDirUITest`) on Windows 11, IU 262.10968.63, display at 250% scaling; every T4 run on this machine since 2026-11-23.
+- **What:** step 1 ("click Open") reported success, step 2 timed out waiting for the Open dialog. `idea.log` had `SmoothRobot - Click was unsuccessful … expui/welcome/open.svg` (`MOUSE_RELEASED event was missing`). Driver clicks with the real mouse (`java.awt.Robot`), so a click goes to whatever window is on top at that spot. Windows' foreground lock doesn't let a process that the user didn't start take the foreground, so the IDE (launched by Gradle's test JVM) opened behind the maximized terminal and only flashed its taskbar button; the Starter screenshot showed the terminal. Java still reported the hidden IDE frame as focused, so a check based on `isFocused()` doesn't detect it. Earlier all-black screenshots were the same failure with the screen locked.
+- **What we did:** `FlutterIdeUITest.bringIdeToFront()` makes each showing IDE window always-on-top for a moment on the IDE's UI thread (`toFront()` alone is ignored under the foreground lock), then restores it. Called with `force = true` when the welcome screen or project frame appears, and without force from `dismissInterruptions()` while polling. T4 then passed in 55 s with no unsuccessful clicks.
+- **Status:** fixed in the harness. A locked or sleeping screen still breaks every UI test on Windows and macOS: keep the desktop unlocked.
+
 ## IDE Starter's process scans cost ~7 minutes per test on Windows
 
 - **Date:** 2026-11-26 · **Where:** `HarnessSelfCheckUITest` on Windows 11, IU 262.10968.63.
