@@ -384,7 +384,35 @@ intellijPlatformTesting.testIde.register("integration") {
     minHeapSize = "1g"
     maxHeapSize = "4g"
 
-    systemProperty("path.to.build.plugin", project.tasks.buildPlugin.get().archiveFile.get().asFile.absolutePath)
+    // Resolve the plugin archive lazily via CommandLineArgumentProvider so that the `archiveFileName` override on
+    // `buildPlugin` (configured later in this file) applies; `Test.systemProperty(String, Any)` does not unwrap
+    // `Provider` values and instead calls `Provider.toString()`.
+    val pluginArchive = project.tasks.buildPlugin.flatMap { it.archiveFile }
+    jvmArgumentProviders += CommandLineArgumentProvider {
+      listOf("-Dpath.to.build.plugin=${pluginArchive.get().asFile.absolutePath}")
+    }
+    systemProperty("dart.plugin.version", dartPluginVersion.trim())
+    systemProperty("lsp4ij.plugin.version", libs.versions.lsp4ij.get())
+    // Agent-driven integration testing (see .agents/design-docs/agent-integration-testing.md):
+    //   -Pflutter.plugin.zip=<zip>  run the tests against this plugin build instead of the one buildPlugin made
+    //   -Pide.version=<build>       pin the IDE build (for example 262.10968.63) so red and green runs match
+    //   -Pide.product=<IU|AI|IC>    reserved; only IU is wired up today
+    listOf("flutter.plugin.zip", "ide.version", "ide.product").forEach { name ->
+      providers.gradleProperty(name).orNull?.let { systemProperty(name, it) }
+    }
+    // Pass the harness's environment variables from the shell that ran Gradle, and remove them when that shell doesn't
+    // set them. The test JVM otherwise inherits the environment of the Gradle daemon (fixed when the daemon started)
+    // or of a cached configuration entry, so a variable unset in the shell stayed in effect: a daemon started with
+    // DART_PLUGIN_VERSION=506.1.0 kept installing a Dart plugin IU 262 can't load. Reading them through `providers`
+    // also makes them configuration cache inputs, so changing one invalidates the cache.
+    listOf(
+      "FLUTTER_SDK", "DART_PLUGIN_VERSION", "DART_PLUGIN_ZIP", "LSP4IJ_PLUGIN_VERSION", "FLUTTER_UI_TEST_WITHOUT_PLUGIN",
+      "AGENT_TESTING_MODE", "AGENT_TESTING_PROBE", "KEEP_TEST_PROJECT", "KEEP_IDE_OPEN_MINUTES",
+      "WALKTHROUGH_STEP_PAUSE_MS", "WALKTHROUGH_STEPS_FILE",
+    ).forEach { name ->
+      val value = providers.environmentVariable(name).orNull
+      if (value != null) environment(name, value) else environment.remove(name)
+    }
     systemProperty(
       "allure.results.directory", project.layout.buildDirectory.get().asFile.absolutePath + "/allure-results"
     )
@@ -396,7 +424,10 @@ intellijPlatformTesting.testIde.register("integration") {
     jvmArgumentProviders += CommandLineArgumentProvider {
       mutableListOf(
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.desktop/javax.swing=ALL-UNNAMED"
+        "--add-opens=java.desktop/javax.swing=ALL-UNNAMED",
+        // The test JVM only drives the IDE remotely; keep AWT headless so JBR does not start Wayland toolkit threads
+        // (e.g. WLKeyboard.KeyRepeatManager) that Starter's ThreadLeakTracker reports as leaks.
+        "-Djava.awt.headless=true"
       )
     }
 
