@@ -7,6 +7,7 @@
 package io.flutter.integrationTest
 
 import com.intellij.driver.client.Driver
+import com.intellij.driver.client.Remote
 import com.intellij.driver.sdk.ActionManager
 import com.intellij.driver.sdk.getPlugin
 import com.intellij.driver.sdk.invokeAction
@@ -15,8 +16,10 @@ import com.intellij.driver.sdk.isPluginLoaded
 import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
+import com.intellij.ide.starter.coroutine.CommonScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.ide.IDETestContext
+import io.flutter.integrationTest.utils.DartPluginSelection
 import io.flutter.integrationTest.utils.IdeLog
 import io.flutter.integrationTest.utils.Platform
 import io.flutter.integrationTest.utils.RunResult
@@ -62,6 +65,10 @@ import kotlin.time.Duration.Companion.seconds
 @ExtendWith(FlutterIdeUITest.ResultWatcher::class)
 abstract class FlutterIdeUITest {
 
+  init {
+    disableStarterProcessScans
+  }
+
   protected lateinit var run: BackgroundRun
     private set
 
@@ -98,10 +105,27 @@ abstract class FlutterIdeUITest {
     println(Platform.describe())
     this.context = context
     result.ide = context.ide.build
-    run = start(context)
+    recordDartPluginChoice()
+    timed("kill leftover IDEs from earlier test runs") { killLeftoverTestIdes() }
+    run = timed("IDE launch until Driver connects") { start(context) }
     ideLogOffset = IdeLog.offset(ideLogFile)
-    assertPluginsLoaded()
+    timed("plugin-loaded gate") { assertPluginsLoaded() }
   }
+
+  /** Copies the Dart plugin choice made while building the IDE context into [result]. */
+  private fun recordDartPluginChoice() {
+    DartPluginSelection.last?.let {
+      result.dartPluginVersion = it.version
+      result.dartPluginSource = it.source
+      result.dartPluginBuilds = it.range
+    }
+  }
+
+  /**
+   * Runs [block] as harness phase [label] and records its duration in `run-result.json` (`timings`) and as a
+   * `[timing]` line in the test output. Use it for setup and teardown work that isn't a spec step or oracle.
+   */
+  protected fun <T> timed(label: String, block: () -> T): T = result.timed(label, block)
 
   /** Fails unless the Flutter and Dart plugins are loaded and enabled in the running IDE, and records their versions. */
   protected fun assertPluginsLoaded() {
@@ -110,16 +134,22 @@ abstract class FlutterIdeUITest {
       result.pluginLoaded = false
       return
     }
-    waitFor("plugins to initialize", 2.minutes, 2.seconds) {
-      runCatching { driver.isPluginLoaded("io.flutter") || driver.isPluginLoaded("Dart") }.getOrDefault(false)
+    // The plugin set is fixed when the IDE starts, so there is nothing to wait for once Driver answers: wait only until
+    // a Driver call succeeds (whatever it returns), then check once. Polling until the plugins "load" made an
+    // incompatible Dart plugin cost the full timeout before failing.
+    waitFor("Driver to answer plugin queries", 1.minutes, 1.seconds) {
+      runCatching { driver.isPluginLoaded("io.flutter") }.isSuccess
     }
     val missing = listOf("io.flutter", "Dart").filterNot { id ->
       runCatching { driver.isPluginLoaded(id) && driver.getPlugin(id)?.isEnabled() == true }.getOrDefault(false)
     }
     if (missing.isNotEmpty()) {
       result.pluginLoaded = false
-      result.fail(Phase.SETUP, "plugin-loaded", "plugins not loaded or disabled: $missing")
-      error("Plugins not loaded or disabled in the IDE under test: $missing. Check path.to.build.plugin / flutter.plugin.zip / DART_PLUGIN_ZIP.")
+      val problems = runCatching { IdeLog.pluginLoadProblems(ideLogFile) }.getOrDefault(emptyList())
+      val why = if (problems.isEmpty()) "" else " The IDE reported: ${problems.joinToString("; ")}."
+      result.fail(Phase.SETUP, "plugin-loaded", "plugins not loaded or disabled: $missing.$why")
+      error("Plugins not loaded or disabled in the IDE under test: $missing.$why " +
+            "Check DART_PLUGIN_VERSION / DART_PLUGIN_ZIP and path.to.build.plugin / flutter.plugin.zip.")
     }
     result.pluginLoaded = true
     result.pluginVersion = runCatching { driver.getPlugin("io.flutter")?.getVersion() }.getOrNull()
@@ -174,20 +204,31 @@ abstract class FlutterIdeUITest {
 
   @AfterEach
   fun tearDownIde() {
-    result.currentPhase = Phase.TEARDOWN
     WalkthroughSteps.finish()
-    if (!::run.isInitialized) return
+    if (!::run.isInitialized) {
+      // The IDE never started, typically because building its context failed (for example an incompatible Dart
+      // plugin). Keep the phase (PREFLIGHT) so the failure isn't reported as a teardown problem.
+      recordDartPluginChoice()
+      return
+    }
+    result.currentPhase = Phase.TEARDOWN
     val keepOpenMinutes = System.getenv("KEEP_IDE_OPEN_MINUTES")?.toLongOrNull() ?: 0L
     if (keepOpenMinutes > 0) {
       println("Keeping IDE open for $keepOpenMinutes minute(s)")
       Thread.sleep(keepOpenMinutes * 60_000)
     }
     try {
-      run.closeIdeAndWait()
+      timed("close IDE and wait") { run.closeIdeAndWait() }
     }
     finally {
-      checkIdeLog()
-      checkLeakedProcesses()
+      timed("idea.log and leaked-process checks") {
+        try {
+          checkIdeLog()
+        }
+        finally {
+          checkLeakedProcesses()
+        }
+      }
     }
   }
 
@@ -307,10 +348,62 @@ abstract class FlutterIdeUITest {
   }
 
   /**
+   * Brings the IDE's windows in front of every other window on the desktop, unless one of them already has focus.
+   *
+   * Driver clicks with the real mouse (`java.awt.Robot`), so a click lands on whatever window is on top at that spot.
+   * On Windows the IDE often opens *behind* the window you were using: Windows won't let a process that wasn't started
+   * by a user action take the foreground ("foreground lock"), so it only flashes the taskbar button. Clicks then hit
+   * the other window (`idea.log`: "SmoothRobot - Click was unsuccessful") and screenshots show the wrong thing. A
+   * window can still raise itself by being always-on-top for a moment, so this does that for each showing IDE window
+   * on the IDE's UI thread, then restores the previous always-on-top state. Harmless on Linux and macOS.
+   *
+   * Called with [force] after the IDE's first window appears, and without it from [dismissInterruptions], so a window
+   * that loses its place while a test is polling is raised again. Never fails the test; a failure is only logged.
+   *
+   * @param force raise even if an IDE window reports focus. Needed right after launch: under the foreground lock
+   *   Windows has been seen to report the IDE frame as focused while it sat behind a maximized terminal. Without
+   *   [force] the raise is skipped when a window is focused, so polling doesn't steal focus from a popup the test has
+   *   just opened (a focus change closes IDE popups).
+   */
+  protected fun bringIdeToFront(force: Boolean = false) {
+    runCatching {
+      driver.withContext(OnDispatcher.EDT) {
+        val windows = driver.utility(AwtWindow::class).getWindows().filter { it.isShowing() }
+        if (windows.isEmpty() || (!force && windows.any { it.isFocused() })) return@withContext
+        windows.forEach { window ->
+          val wasOnTop = window.isAlwaysOnTop()
+          window.setAlwaysOnTop(true)
+          window.toFront()
+          window.requestFocus()
+          if (!wasOnTop) window.setAlwaysOnTop(false)
+        }
+        println("Brought the IDE to the front (${windows.size} window(s))")
+      }
+    }.onFailure { println("Could not bring the IDE to the front: ${it.message}") }
+  }
+
+  /**
+   * The parts of `java.awt.Window` that [bringIdeToFront] needs, called inside the IDE through Driver. Driver's own
+   * `Window` interface has no always-on-top methods. `getWindows` is static and is called through `driver.utility`.
+   */
+  @Remote("java.awt.Window")
+  interface AwtWindow {
+    fun getWindows(): List<AwtWindow>
+    fun isShowing(): Boolean
+    fun isFocused(): Boolean
+    fun isAlwaysOnTop(): Boolean
+    fun setAlwaysOnTop(alwaysOnTop: Boolean)
+    fun toFront()
+    fun requestFocus()
+  }
+
+  /**
    * Closes dialogs the IDE may pop up on its own during a test (for example the trial feedback survey "Tell us about
-   * your experience"), which would otherwise block the UI. Called while polling.
+   * your experience"), which would otherwise block the UI, and brings the IDE back to the front if another window
+   * covered it. Called while polling.
    */
   protected fun dismissInterruptions() {
+    bringIdeToFront()
     runCatching {
       driver.ui.xx("//div[@class='JButton' and (@visible_text='No, Thanks' or @visible_text='No, thanks')]").list()
         .firstOrNull()?.let {
@@ -335,6 +428,33 @@ abstract class FlutterIdeUITest {
   }.getOrDefault(false)
 
   // ---------------------------------------------------------------------------------------------------------------
+
+  companion object {
+    /**
+     * Turns off Starter's `KillOutdatedProcesses` extension, which before and after every test class looks for leftover
+     * IDEs by reading the command line of every process on the machine (OSHI). On Windows each scan took 2-3 minutes,
+     * more than the test itself. [killLeftoverTestIdes] does the same job with `ProcessHandle` in well under a second.
+     * Evaluated from the instance initializer, which (for `PER_CLASS` tests) runs before the class's BeforeAll
+     * callbacks. Side effect: Starter binds IDE processes to the suite scope instead of the class scope; every test
+     * closes its IDE in [tearDownIde] anyway.
+     */
+    private val disableStarterProcessScans: Unit by lazy { CommonScope.perSuiteScopeForIdeActivities() }
+
+    /** Kills IDE processes still running from an earlier, aborted test run (their executable is under `ide-tests`). */
+    fun killLeftoverTestIdes() {
+      val leftovers = ProcessHandle.allProcesses()
+        .filter { it.pid() != ProcessHandle.current().pid() }
+        .filter { p ->
+          val cmd = p.info().command().orElse("")
+          cmd.contains("/ide-tests/") || cmd.contains("\\ide-tests\\")
+        }
+        .toList()
+      leftovers.forEach { p ->
+        println("Killing leftover test IDE process ${p.pid()} ${p.info().command().orElse("?")}")
+        p.destroyForcibly()
+      }
+    }
+  }
 
   /** Writes `run-result.json` after each test, recording failures that happened outside `step`/`assertOracle` blocks. */
   class ResultWatcher : TestWatcher {

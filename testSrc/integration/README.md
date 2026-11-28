@@ -106,16 +106,18 @@ Run the recorder with `--help` for all options. For full details, see
 | Variable | Effect |
 |---|---|
 | `FLUTTER_SDK` | Flutter SDK used by the tests (required) |
-| `DART_PLUGIN_ZIP` | Optional path to a locally built `Dart.zip` to install instead of the Marketplace Dart plugin |
+| `DART_PLUGIN_VERSION=<v>` or `latest` | Install exactly this Dart plugin version (or the newest one compatible with the IDE build). Rarely needed: without it the harness uses `dartPluginVersion` from `gradle.properties`, or the newest compatible version if the IDE build can't load that. Don't leave it exported; an incompatible version fails the run before the IDE starts |
 | `KEEP_TEST_PROJECT=true` | Keep the test's Flutter project instead of deleting it afterwards |
 | `KEEP_IDE_OPEN_MINUTES=<n>` | Leave the IDE running for `n` minutes after the test, for inspection |
 | `FLUTTER_UI_TEST_WITHOUT_PLUGIN=true` | Install no Flutter plugin: the control run in which every UI test must fail on its own checks |
 | `AGENT_TESTING_MODE=red` | Record `idea.log` errors and leaked processes instead of failing on them (used when certifying against a deliberately broken build) |
-| `DART_PLUGIN_ZIP=<zip>` | Install a locally built Dart plugin instead of the Marketplace version |
+| `DART_PLUGIN_ZIP=<zip>` | Install a locally built Dart plugin instead of the Marketplace version (checked against the IDE build like `DART_PLUGIN_VERSION`) |
 
 Gradle properties: `-Pflutter.plugin.zip=<zip>` runs the tests against that plugin build instead of the one
 `buildPlugin` just made; `-Pide.version=<build>` pins the IDE build (for example `262.10968.63`). Each run writes
-`build/agent-testing/run-result.json` with the outcome of every `step` and `assertOracle` block; see
+`build/agent-testing/run-result.json` with the outcome of every `step` and `assertOracle` block, the Dart plugin it
+installed and why, and how long each harness phase took (`timings`). The same timings are printed as `[timing]` lines
+in the test output, with a summary at the end; read those first when a run is slow. See
 `.agents/skills/ui-test-reference/SKILL.md` for the harness and
 `.agents/design-docs/agent-integration-testing.md` for how tests are certified.
 

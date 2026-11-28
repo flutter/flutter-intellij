@@ -6,7 +6,6 @@
 
 package io.flutter.integrationTest
 
-import com.intellij.ide.starter.buildTool.GradleBuildTool
 import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
@@ -20,6 +19,7 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.utils.Git
 import com.intellij.openapi.util.SystemInfo
+import io.flutter.integrationTest.utils.DartPluginSelection
 import io.flutter.integrationTest.utils.Platform
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -84,18 +84,17 @@ class Setup {
     }
 
     /**
-     * Reads the Dart plugin version from the `dart.plugin.version` system property (set from `gradle.properties` by the
-     * `integration` Gradle task), falling back to `gradle.properties` when running tests directly from the IDE.
+     * `dartPluginVersion` (the version the plugin is built against) and where it came from: the `dart.plugin.version`
+     * system property set by the `integration` Gradle task, or `gradle.properties` when running tests directly from
+     * the IDE. Overrides (`DART_PLUGIN_VERSION`, `DART_PLUGIN_ZIP`) are handled by [DartPluginSelection].
      */
-    private val dartPluginVersion: String by lazy {
-      // DART_PLUGIN_VERSION overrides the version for the IDE under test only (the plugin is still built against
-      // gradle.properties' dartPluginVersion). Needed when certifying on an older IDE build: Dart 510+ requires 253.
-      System.getenv("DART_PLUGIN_VERSION")?.trim()?.takeIf { it.isNotEmpty() }
-        ?: System.getProperty("dart.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
-        ?: Properties().apply {
-          Files.newBufferedReader(Git.getRepoRoot().resolve("gradle.properties")).use(::load)
-        }.getProperty("dartPluginVersion")?.trim()?.takeIf { it.isNotEmpty() }
-        ?: error("dartPluginVersion is not configured in gradle.properties")
+    private val gradleDartPluginVersion: Pair<String, String> by lazy {
+      System.getProperty("dart.plugin.version")?.trim()?.takeIf { it.isNotEmpty() }
+        ?.let { it to "dartPluginVersion (dart.plugin.version system property from Gradle)" }
+      ?: (Properties().apply {
+        Files.newBufferedReader(Git.getRepoRoot().resolve("gradle.properties")).use(::load)
+      }.getProperty("dartPluginVersion")?.trim()?.takeIf { it.isNotEmpty() }
+          ?: error("dartPluginVersion is not configured in gradle.properties")) to "dartPluginVersion in gradle.properties"
     }
 
     /** The IntelliJ IDEA build the UI tests use unless `ide.version` says otherwise. */
@@ -171,9 +170,9 @@ class Setup {
         val pluginPath = System.getProperty("flutter.plugin.zip")?.takeIf { it.isNotBlank() }
                          ?: System.getProperty("path.to.build.plugin")
                          ?: error("Neither flutter.plugin.zip nor path.to.build.plugin is set")
-        // DART_PLUGIN_ZIP installs a locally built Dart plugin (for example from a dart-intellij-third-party pull
-        // request) instead of the Marketplace version.
-        val localDartPlugin = System.getenv("DART_PLUGIN_ZIP")?.takeIf { it.isNotBlank() }
+        // DART_PLUGIN_ZIP / DART_PLUGIN_VERSION / gradle.properties, checked against this IDE build before anything starts;
+        // see DartPluginSelection.
+        val dart = DartPluginSelection.choose(ide, gradleDartPluginVersion)
         val plugins = PluginConfigurator(this)
         if (withoutPlugin) {
           println("FLUTTER_UI_TEST_WITHOUT_PLUGIN is set: NOT installing the Flutter plugin")
@@ -191,15 +190,17 @@ class Setup {
           println("Installing LSP4IJ $lsp4ijVersion")
           plugins.installPluginFromPluginManager("com.redhat.devtools.lsp4ij", lsp4ijVersion)
         }
-        if (localDartPlugin != null) {
-          println("Installing the Dart plugin from $localDartPlugin")
-          plugins.installPluginFromPath(Paths.get(localDartPlugin))
+        if (dart.localZip != null) {
+          println("Installing the Dart plugin from ${dart.localZip}")
+          plugins.installPluginFromPath(dart.localZip)
         }
         else {
-          println("Installing the Dart plugin $dartPluginVersion from the Marketplace")
-          plugins.installPluginFromPluginManager("Dart", dartPluginVersion)
+          println("Installing the Dart plugin ${dart.version} from the Marketplace")
+          plugins.installPluginFromPluginManager(dart.descriptor!!)
         }
-        withBuildTool<GradleBuildTool>()
+        // No withBuildTool<...>() here: Flutter projects aren't opened as Gradle or Maven projects, and resolving any
+        // build tool instantiates all of Starter's build tools. MavenBuildTool then scans every process's command line
+        // for a Maven indexer after each IDE run, which takes minutes on Windows.
 
         // Don't let the platform auto-open README.md when a project is opened for the first time. The Markdown
         // preview it brings up is a JCEF browser, and under Xvfb that browser has frozen the EDT for minutes on IU
